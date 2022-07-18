@@ -1,5 +1,23 @@
 
 
+def next_step(board, snake, depth, last_step):
+
+	coordinate_steps = [[0, 1], [1, 0], [0, -1], [-1, 0]]					# Cordinates representing each possible step
+
+	new_head = [sum(n) for n in zip(snake[0], last_step)]					
+	if (0 <= new_head[0] < board[0] and 0 <= new_head[1] < board[1] 		# Check if new head position is on the table
+			and new_head not in snake[:-1]):								# Check if new head position is not on the previous snae position (except tail)
+		remove_step = (coordinate_steps.index(last_step) + 2)%4				# Remove step that return to previously position
+		coordinate_steps.pop(remove_step)
+		new_snake = [new_head] + snake[:-1]									# New snake body position
+		if depth == 1:														# If we have reached the end of the valid path, we consider it correct
+			return 1
+		else:																# If we have not reached the end of the path, next step
+			return (next_step(board, new_snake, depth-1, coordinate_steps[0]) + next_step(board, new_snake, depth-1, coordinate_steps[1]) + next_step(board, new_snake, depth-1, coordinate_steps[2]));
+	else:		
+		return 0		
+
+
 def numberOfAvailableDifferentPaths(board, snake, depth):
 	"""
 	Search how many valids paths of length p can the snake make on the board
@@ -27,26 +45,15 @@ def numberOfAvailableDifferentPaths(board, snake, depth):
 		raise TypeError('Error type: {} for depth whereas int is expected'.format(type(depth))) 
 
 
-	coordinate_steps = [[0, 1], [1, 0], [0, -1], [-1, 0]]		# Cordinates representing each possible step
-	count_paths = 0												# Initialize possible paths count
+	coordinate_steps = [[0, 1], [1, 0], [0, -1], [-1, 0]]						# Cordinates representing each possible step
+
+	remove_step = [snake[1][0] - snake[0][0], snake[1][1] - snake[0][1]]		# Remove step with the following snake body part
+	coordinate_steps.pop(coordinate_steps.index(remove_step))
 
 
-	for i in range(len(coordinate_steps)):
-		'''
-		For each possible next step, we calculate the new head position of the snake, 
-		and it is checked that this position is correct in the current context of the board.
- 		After this, if there are more steps to take, the next step is performed recursively. 
- 		Otherwise, the current path is added as a valid path.
-		'''
-		new_head = [sum(n) for n in zip(snake[0], coordinate_steps[i])]			# Check if new head position is on the table
-		if (0 <= new_head[0] < board[0] and 0 <= new_head[1] < board[1] 		# Check if new head position is not on the previous snae position (except tail)
-				and new_head not in snake[:-1]):
-			new_snake = [new_head] + snake[:-1]
-			if depth == 1:
-				count_paths += 1												# Valid path completed
-			else:
-				count_paths += numberOfAvailableDifferentPaths(board, new_snake, depth-1)		# Nex recursive iteration				
-	return count_paths		
+	return (next_step(board, snake, depth, coordinate_steps[0]) +				# Possible next steps
+           next_step(board, snake, depth, coordinate_steps[1]) +
+           next_step(board, snake, depth, coordinate_steps[2]));
 
 
 
